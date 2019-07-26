@@ -2,8 +2,8 @@
 //  main.swift
 //  Unit-1-Assessment
 //
-//  Created by Anthony Gonzalez on 7/25/19.
-//  Copyright © 2019 Anthony Gonzalez. All rights reserved.
+//  Created by Anthony on 7/25/19.
+//  Copyright © 2019 Anthony. All rights reserved.
 //
 
 
@@ -17,17 +17,21 @@ extension Double {
 }
 
 
-
-
-struct Item {
+struct Item: Hashable {
     let name: String
     let price: Double
 }
-var productArray = [Item]()
-var prices = [Double]()
-var currentItem = productArray.popLast()
 
+
+var productArray: [Item] = [Item(name: "Bulletproof Nail Clippers", price: 3.50), Item(name: "Glow-in-the-dark Turban", price: 20.99), Item(name: "Solar-powered Baseball Cap", price: 15.60), Item(name: "David Rifkin's Autograph", price: 12.55), Item(name: "Oil Painting of Circus Clowns Storming the Beach at Normandy", price: 66.44), Item(name: "Teeny Weeny Mussolini", price: 18.83), Item(name: "How to Read - A Written Tutorial", price: 10.00)]
+
+
+var cartArray = [Item]()
+var prices = [Double]()
+var counter = 0
 var cash = Bool()
+var indexNumForUserChoices = Int()
+
 
 func getIntFromUser() -> Int {
     print("Enter your number: ", terminator: "")
@@ -38,6 +42,25 @@ func getIntFromUser() -> Int {
             return userNum
         } else {
             print("[You did not enter a valid number.]")
+        }
+    }
+}
+
+
+
+
+func getAnswerFromUser() -> String {
+    print("""
+Enter number or an additional command
+
+(additional commands: "checkout", "show list", "show cart", "unlisted item")
+""")
+    while true {
+        let input = readLine()?.lowercased().replacingOccurrences(of: "[ ]+", with: " ", options: .regularExpression)
+        if let input = input {
+            return input
+        } else {
+            print("[invalid input]")
         }
     }
 }
@@ -75,21 +98,21 @@ Enter 0 for cash and 1 for credit
 func groceryItems () {
     print("""
 
-Enter the number of the product you want to purchase or select an additional option.
+Enter the number of the product you want to purchase.
 ~~~~ ALL ITEMS ~~~~
-0) Bulletproof Nail Clippers ($3.50)
-1) Glow-in-the-dark Turban ($20.99)
-2) Solar-powered Baseball Cap ($15.60)
-3) David Rifkin's Autograph ($12.55)
-4) Painting of Circus Clowns Storming the Beach at Normandy ($50.99)
+""")
+    for stuff in productArray {
+        print("""
+            \(counter)) \(stuff.name) ($\(stuff.price.roundTo(places: 2)))
+            """)
+        counter += 1
+    }
+    
+    print("""
 ~~~~~~~~~~~~~~~~~~~~
 
-Additonal Options:
--1) Checkout
--2) Manually enter item name
--3) Show cart
-
 """)
+    counter = 0
     userChoices()
 }
 
@@ -97,65 +120,51 @@ Additonal Options:
 
 
 func userChoices () {
-    let myOptionChoice = getIntFromUser()
-    
+    let myOptionChoice = getAnswerFromUser()
+    if let userNum = Int(myOptionChoice) {
+        indexNumForUserChoices = userNum
+    } else {
+    }
+    let isIndexValid = productArray.indices.contains(indexNumForUserChoices)
     switch myOptionChoice {
-        
-    case 0: let bulletproofNailClippers = Item(name: "Bulletproof Nail Clippers", price: 3.50)
-    quantity(thing: bulletproofNailClippers)
-        
-        
-        
-    case 1:  let turban = Item(name: "Glow-in-the-dark Turban", price: 20.99)
-    quantity(thing: turban)
-        
-        
-    case 2: let solarCap = Item(name: "Solar-powered Baseball Cap", price: 15.60)
-    quantity(thing: solarCap)
-        
-        
-    case 3: let davidAutograph = Item(name: "David Rifkin's Autograph", price: 12.55)
-    quantity(thing: davidAutograph)
-        
-    case 4: let painting = Item(name: "Painting of Circus Clowns Storming the Beach at Normandy", price: 50.99)
-    quantity(thing: painting)
-        
-        
-    case -1:
+    case "checkout":
         checkout()
         
         
-    case -2:
-        manualItem()
+    case "unlisted item":
+        unlistedItem()
         
         
-    case -3: cart(productArray)
+    case "show cart" : cart(cartArray)
         
+    case "show list" : groceryItems()
+        
+    case String(indexNumForUserChoices): if isIndexValid == true {
+        quantity(thing: productArray[indexNumForUserChoices])
+    } else {
+        print("[error: invalid catalog number]")
+        userChoices()
+        }
     default: print("[error: invalid input]")
-    groceryItems()
+    userChoices()
     }
 }
 
 
 
 
-func manualItem () {
+
+func unlistedItem () {
     print("Please enter the item name:", terminator: " ")
     let input = readLine()?.capitalized.replacingOccurrences(of: "[ ]+", with: " ", options: .regularExpression)
     if let input = input {
         if input == "" || input == " " {
             print("[error: You did not enter an item.]")
         } else {
-            let newItem = Item(name: input, price: Double.random(in: 1.0 ... 10.0).rounded())
+            let newItem = Item(name: input, price: Double.random(in: 1.0 ... 10.0).roundTo(places: 2))
+            print("[Catalog updated]")
             productArray.append(newItem)
-            prices.append(newItem.price)
-            print("""
-                
-                ["\(input)" has been added to your cart]
-                Remember to check your cart by entering -3
-                
-                """)
-            groceryItems()
+            quantity(thing: newItem)
         }
     }
 }
@@ -175,8 +184,8 @@ func quantity (thing: Item) {
         print("[Invalid quantity]")
         quantity(thing: currentItem)
     }
-    for _ in 1 ... Int(amount) {
-        productArray.append(currentItem)
+    for _ in 1 ... amount {
+        cartArray.append(currentItem)
         prices.append(currentItem.price)
     }
     print("[\(amount) '\(currentItem.name)' added to cart]")
@@ -193,8 +202,8 @@ func cart(_:[Item]){
 
 🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒🛒
 """)
-    print("Your current cart (\(productArray.count) items)")
-    for product in productArray {
+    print("Your current cart (\(cartArray.count) items)")
+    for product in cartArray {
         print("""
             Item(price: $\(product.price), name: "\(product.name)")
             """)
@@ -211,15 +220,15 @@ func cart(_:[Item]){
     if answer == "yes" {
         checkout()
     } else if answer == "no" {
-        groceryItems()
+        userChoices()
     } else if answer == "clear" {
-        productArray.removeAll()
+        cartArray.removeAll()
         prices.removeAll()
         print("[Your cart has been emptied]")
         groceryItems()
     } else {
         print("[You did not provide a valid input]")
-        cart(productArray)
+        cart(cartArray)
     }
 }
 
@@ -230,7 +239,7 @@ func checkout () {
     let totalPrice = Double(prices.reduce(0, +)).roundTo(places: 2)
     let discount = Double(totalPrice * 0.04).roundTo(places: 2)
     
-    if productArray.isEmpty == true {
+    if cartArray.isEmpty == true {
         print("[You have no items to checkout]")
         print("")
         groceryItems()
@@ -249,3 +258,5 @@ func checkout () {
 
 
 welcome()
+
+
