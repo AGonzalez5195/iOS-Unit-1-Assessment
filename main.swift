@@ -216,7 +216,7 @@ func cart(_:[Item]){
         [Would you like to checkout, yes or no? Or enter 'clear' to empty your cart]
         
         """)
-    let answer = readLine()?.lowercased()
+    let answer = readLine()?.lowercased().replacingOccurrences(of: "[ ]+", with: "", options: .regularExpression)
     if answer == "yes" {
         checkout()
     } else if answer == "no" {
