@@ -242,7 +242,7 @@ func checkout () {
     if cartArray.isEmpty == true {
         print("[You have no items to checkout]")
         print("")
-        groceryItems()
+        userChoices()
     } else {
         switch cash {
         case true: print("""
